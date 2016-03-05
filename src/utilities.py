@@ -11,8 +11,6 @@ import utm, os.path, csv
 Tool to convert from UTM to lat/long
 '''
 def utm_to_latlong(easting, northing, zone_number = 10, zone_letter = 'U'):
-    print easting
-    print northing
     try:
         return utm.to_latlon(easting, northing, zone_number, zone_letter)
     except:
