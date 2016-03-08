@@ -22,5 +22,13 @@ def graffiti_kml_to_csv(kml_filename):
     #ok, just call magic function
     utilities.kml_to_csv(kml_filename, use_headers=True, output_filename='graffiti.csv')
 
-homeless_kml_to_csv('../data/homeless_shelters/doc.kml')     
-graffiti_kml_to_csv('../data/graffiti/graffiti.kml')
+def skytrain_station_kml_to_csv(kml_file):
+    utilities.kml_to_csv(kml_file, use_headers=True, output_filename='rapid_transit_stations.csv')
+
+def street_light_poles_kml_to_csv(kml_file):
+    utilities.kml_to_csv(kml_file, use_headers=True, output_filename='street_lighting_poles.csv')
+    
+# homeless_kml_to_csv('../data/homeless_shelters/doc.kml')     
+# graffiti_kml_to_csv('../data/graffiti/graffiti.kml')
+#skytrain_station_kml_to_csv('../data/skytrain_stations/rapid_transit_stations.kml')
+# street_light_poles_kml_to_csv('../data/street_lightings/street_lighting_poles.kml')
