@@ -5,6 +5,7 @@ Created on Mar 2, 2016
 '''
 from pykml import parser
 from pykml.parser import Schema
+from geopy.distance import vincenty
 import utm, os.path, csv
 
 '''
@@ -84,8 +85,42 @@ def kml_to_csv(kml_file, use_headers=True, output_filename = 'output.csv'):
                                 
                 csv_out.writerow(line_str)
 
+def number_of_graffiti_points(lat, long, radius1=50, radius2=100, graffiti_fh=None):
+    graffiti_file = '../data/graffiti/graffiti.csv'
+    
+    # check if graffiti_fh is NOT empty
+    open_myself = False
+    if graffiti_fh is None:
+        graffiti_fh = open(graffiti_file, 'rb')
+        open_myself = True
+        
+    graffiti_fh.seek(0)
+    graffiti_reader = csv.DictReader(graffiti_fh)
+    
+    # yeah, we check the point against all 8k+ rows..yeah, yeah....
+    count1 = 0
+    count2 = 0
+    count = 0;
+    for row in graffiti_reader:        
+        latlong_diff = vincenty((lat,long), (row['LAT'],row['LONG']))
+        print latlong_diff.m
+        #set counts based on radius1 and radius2
+        if latlong_diff.m < radius1:
+            count1 = count1 + int(row['COUNT'])
+        
+        if latlong_diff < radius2:
+            count2 = count2 + int(row['COUNT'])
+            
+        count = count + 1
+        
+    #now we got the counts, we need to clean up and return
+    if open_myself:
+        graffiti_fh.close()
+        
+    return (count1, count2)
 
-
+            
+    
 
 
 
