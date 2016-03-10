@@ -6,6 +6,8 @@ from time import sleep
 import sys
 import csv
 import random
+from requests.execptions import RequestExection
+from ssl import SSLError
 
 
 def main(path_in):
@@ -49,7 +51,7 @@ def main(path_in):
                 sleep(1)
                 location = geolocator.geocode(address)
                 got_it = True
-            except GeopyError:
+            except (GeopyError, SSLError) as e:
                 delay *= 2
                 got_it = False
                 print 'try again...'
