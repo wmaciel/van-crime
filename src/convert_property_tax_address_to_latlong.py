@@ -6,7 +6,6 @@ from time import sleep
 import sys
 import csv
 import random
-from requests.execptions import RequestExection
 from ssl import SSLError
 
 
