@@ -103,7 +103,7 @@ def number_of_graffiti_points(latitude, longitude, radius1=50, radius2=100, graf
     count2 = 0
     for row in graffiti_reader:        
         latlong_diff = vincenty((latitude, longitude), (row['LAT'],row['LONG']))
-        print latlong_diff.m
+
         #set counts based on radius1 and radius2
         if latlong_diff.m < radius1:
             count1 = count1 + int(row['COUNT'])
@@ -138,9 +138,7 @@ def number_of_homeless_shelters_at(latitude, longitude, homeless_fh=None):
         
         #we need to consider the "category" of which there is 4.
         cat = row['CATEGORY'].split(' ')[0].lower()
-        print 'falied ' + str(cat) + ": " + str(latlong_diff.m)
         if retval[cat] > latlong_diff.m:
-            print "worked! "  +  cat + ": " + str(latlong_diff.m)
             retval[cat] = latlong_diff.m
     
     # now we get the tuple from dict in order, since for feature vector we care about that kind of stuff
@@ -155,7 +153,33 @@ def number_of_homeless_shelters_at(latitude, longitude, homeless_fh=None):
     return final_retval
     
 
-
+def number_of_street_lights_at(latitude, longitude, light_fh=None, radius1=50):
+    light_file = '../data/street_lightings/street_lighting_poles.csv'
+    
+    # check if graffiti_fh is NOT empty
+    open_myself = False
+    if light_fh is None:
+        light_fh = open(light_file, 'rb')
+        open_myself = True
+        
+    light_fh.seek(0)
+    light_reader = csv.DictReader(light_fh)
+    
+    # yeah, we check the point against all 8k+ rows..yeah, yeah....
+    count1 = 0
+    for row in light_reader:        
+        latlong_diff = vincenty((latitude, longitude), (row['LAT'],row['LONG']))
+        
+        #set counts based on radius1
+        if latlong_diff.m < radius1:
+            count1 = count1 + 1
+        
+    #now we got the counts, we need to clean up and return
+    if open_myself:
+        light_fh.close()
+        
+    return (count1,)
+    
 
 
 
