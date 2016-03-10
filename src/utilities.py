@@ -5,7 +5,9 @@ Created on Mar 2, 2016
 '''
 from pykml import parser
 from pykml.parser import Schema
+from geopy.distance import vincenty
 import utm, os.path, csv
+from nis import cat
 
 '''
 Tool to convert from UTM to lat/long
@@ -84,8 +86,74 @@ def kml_to_csv(kml_file, use_headers=True, output_filename = 'output.csv'):
                                 
                 csv_out.writerow(line_str)
 
+def number_of_graffiti_points(latitude, longitude, radius1=50, radius2=100, graffiti_fh=None):
+    graffiti_file = '../data/graffiti/graffiti.csv'
+    
+    # check if graffiti_fh is NOT empty
+    open_myself = False
+    if graffiti_fh is None:
+        graffiti_fh = open(graffiti_file, 'rb')
+        open_myself = True
+        
+    graffiti_fh.seek(0)
+    graffiti_reader = csv.DictReader(graffiti_fh)
+    
+    # yeah, we check the point against all 8k+ rows..yeah, yeah....
+    count1 = 0
+    count2 = 0
+    for row in graffiti_reader:        
+        latlong_diff = vincenty((latitude, longitude), (row['LAT'],row['LONG']))
+        print latlong_diff.m
+        #set counts based on radius1 and radius2
+        if latlong_diff.m < radius1:
+            count1 = count1 + int(row['COUNT'])
+        
+        if latlong_diff < radius2:
+            count2 = count2 + int(row['COUNT'])
+                    
+    #now we got the counts, we need to clean up and return
+    if open_myself:
+        graffiti_fh.close()
+        
+    return (count1, count2)
 
-
+# takes lat/long and returns distance from nearest (Adult, Men, Women/Families, Youth)
+def number_of_homeless_shelters_at(latitude, longitude, homeless_fh=None):
+    homeless_file = '../data/homeless_shelters/doc.csv'
+    
+    # check if graffiti_fh is NOT empty
+    open_myself = False
+    if homeless_fh is None:
+        homeless_fh = open(homeless_file, 'rb')
+        open_myself = True
+        
+    homeless_fh.seek(0)
+    homeless_reader = csv.DictReader(homeless_fh)
+    
+    # yeah, we check the point against all 8k+ rows..yeah, yeah....
+    keys = ['adults', 'men', 'women/families', 'youth']
+    retval = dict((x, float('Inf')) for x in keys)
+    for row in homeless_reader:        
+        latlong_diff = vincenty((latitude, longitude), (row['LAT'],row['LONG']))
+        
+        #we need to consider the "category" of which there is 4.
+        cat = row['CATEGORY'].split(' ')[0].lower()
+        print 'falied ' + str(cat) + ": " + str(latlong_diff.m)
+        if retval[cat] > latlong_diff.m:
+            print "worked! "  +  cat + ": " + str(latlong_diff.m)
+            retval[cat] = latlong_diff.m
+    
+    # now we get the tuple from dict in order, since for feature vector we care about that kind of stuff
+    final_retval = tuple()
+    for c in keys:
+        final_retval = final_retval + (retval[c],)
+        
+    #now we got the counts, we need to clean up and return
+    if open_myself:
+        homeless_fh.close()
+        
+    return final_retval
+    
 
 
 
