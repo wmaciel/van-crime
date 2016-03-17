@@ -13,34 +13,65 @@ def main():
     #test values
     lat = 49.28334
     lon = -123.113
-    prop_df = pd.read_csv(project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(2009) + '.csv')
-    print avg_closest_properties(2009,lat,lon,prop_df=prop_df)
+    prop_df = pd.read_csv(project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(2006) + '.csv')
+    print avg_closest_properties(lat,lon,prop_df=prop_df)
 
-def avg_closest_properties(year, lat, long, prop_df = None, range_val = 0.0001):
-    property_file = project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(year) + '.csv'
-
-    if prop_df is None: prop_df = pd.read_csv(property_file)
-
-    # Keep a copy of original df
-    temp_df = prop_df
-
-    # Narrow down options to minimize unnecessary calculations
-    prop_df = prop_df[prop_df['LATITUDE']< lat+range_val]
-    prop_df = prop_df[prop_df['LATITUDE']> lat-range_val]
-    prop_df = prop_df[prop_df['LONGITUDE']< long+range_val]
-    prop_df = prop_df[prop_df['LONGITUDE']> long-range_val]
-
-    # If not enough values, start again with a bigger range
-    if prop_df.count()['VALUE'] < 10:
-        return avg_closest_properties(year,lat,long,prop_df=temp_df,range_val=range_val*10)
+    sky_df = pd.read_csv(project_root + 'data/skytrain_stations/rapid_transit_stations.csv')
+    print closest_skytrain(lat,lon)
 
 
-    prop_df['DIST_DIF'] =  prop_df.apply(lambda row: vincenty((lat,long),(row['LATITUDE'],row['LONGITUDE'])).km,axis=1)
+def avg_closest_properties(lat, lon,year = None, prop_df = None, range_val = 0.0001):
 
-    ten_min_df = prop_df[['VALUE','DIST_DIF']].nsmallest(10,'DIST_DIF')
-    five_min_df = ten_min_df.nsmallest(5,'DIST_DIF')
+    try:
+        if year is not None:
+            property_file = project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(year) + '.csv'
+            if prop_df is None: prop_df = pd.read_csv(property_file)
 
-    return (five_min_df['VALUE'].mean(),ten_min_df['VALUE'].mean())
+
+        # Keep a copy of original df
+        temp_df = prop_df
+
+        # Narrow down options to minimize unnecessary calculations
+        prop_df = prop_df[prop_df['LATITUDE']< lat+range_val]
+        prop_df = prop_df[prop_df['LATITUDE']> lat-range_val]
+        prop_df = prop_df[prop_df['LONGITUDE']< lon+range_val]
+        prop_df = prop_df[prop_df['LONGITUDE']> lon-range_val]
+
+        # If not enough values, start again with a bigger range
+        if prop_df.count()['VALUE'] < 10:
+            return avg_closest_properties(lat,lon,prop_df=temp_df,range_val=range_val*10)
+
+        # Apply vincenty in the remaining rows
+        prop_df['DIST_DIF'] =  prop_df.apply(lambda row: vincenty((lat,lon),(row['LATITUDE'],row['LONGITUDE'])).km,axis=1)
+
+        # Find the top 10 and top 5 closest properties
+        ten_min_df = prop_df[['VALUE','DIST_DIF']].nsmallest(10,'DIST_DIF')
+        five_min_df = ten_min_df.nsmallest(5,'DIST_DIF')
+
+        # Return average property value for he top 5 and 10
+        return [five_min_df['VALUE'].mean(),ten_min_df['VALUE'].mean()]
+
+    except:
+        print "Error in avg_closest_properties"
+
+
+def closest_skytrain(lat,lon, sky_df = None):
+
+    skytrain_file = project_root + 'data/skytrain_stations/rapid_transit_stations.csv'
+    if sky_df is None: sky_df = pd.read_csv(skytrain_file)
+
+    vector = [0]*(sky_df.count()['STATION']+1)
+
+    # Find closest skytrain station
+    sky_df['DIST_DIF'] = sky_df.apply(lambda row: vincenty((lat,lon),(row['LAT'],row['LONG'])).km,axis=1)
+    min_df = sky_df.nsmallest(1,'DIST_DIF')
+
+    vector[list(min_df.index)[0]] = 1
+    vector[-1] = min_df.iloc[0]['DIST_DIF']
+
+    # returns on-hot encoded vector with distance at the end
+    return vector
+
     
 
 
