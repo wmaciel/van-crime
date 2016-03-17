@@ -27,7 +27,7 @@ Distance to closest skytrain
 -- street_lighting_poles.csv + utilities.py (number_of_street_lights_at)
 50m light poles count
 
--- VANCOUVER_SEA_ISLAN_CCG/summary_data.csv
+-- VANCOUVER_SEA_ISLAND_CCG/summary_data.csv
 Total precipitation per month and year
 Mean temp per month and year
 Min temp per month and year

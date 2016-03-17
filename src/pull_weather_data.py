@@ -1,3 +1,10 @@
+'''
+Created by:
+Juan Sarria
+March 15, 2016
+'''
+
+
 from urllib2 import Request, HTTPError, URLError, urlopen
 from datetime import timedelta, date
 import csv, os

@@ -1,3 +1,9 @@
+'''
+Created by:
+Juan Sarria
+March 15, 2016
+'''
+
 import csv, pandas as pd, numpy as np
 
 def main(pr, fn):

@@ -7,7 +7,7 @@ from pykml import parser
 from pykml.parser import Schema
 from geopy.distance import vincenty
 import utm, os.path, csv
-from nis import cat
+#from nis import cat
 
 '''
 Tool to convert from UTM to lat/long
