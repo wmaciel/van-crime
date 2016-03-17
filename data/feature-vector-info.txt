@@ -16,11 +16,11 @@ distance to men
 distance to women/families
 distance to youth
 
--- latlong_property_tax_20*.csv + utilities.py (avg_closest_properties)
+-- latlong_property_tax_20*.csv + utilities2.py (avg_closest_properties)
 Average value of the 5 closest properties
 Average value of the 10 closest properties
 
--- rapid_transit_stations.csv
+-- rapid_transit_stations.csv + utilities2.py (closest_skytrain)
 Closest skytrain station (one hot) (x20)
 Distance to closest skytrain
 
