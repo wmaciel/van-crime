@@ -13,12 +13,17 @@ def main():
     #test values
     lat = 49.28334
     lon = -123.113
+
     prop_df = pd.read_csv(project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(2006) + '.csv')
     print avg_closest_properties(lat,lon,prop_df=prop_df)
 
     sky_df = pd.read_csv(project_root + 'data/skytrain_stations/rapid_transit_stations.csv')
     print closest_skytrain(lat,lon)
 
+    crime_df = pd.read_csv(project_root+'/data/crime_03_15/crime_latlong.csv')
+    neighbourhoods = crime_df['NEIGHBOURHOOD'].unique().tolist()
+    print len(neighbourhoods    )
+    print one_hot_encoding(neighbourhoods[2],neighbourhoods)
 
 def avg_closest_properties(lat, lon,year = None, prop_df = None, range_val = 0.0001):
 
@@ -26,7 +31,6 @@ def avg_closest_properties(lat, lon,year = None, prop_df = None, range_val = 0.0
         if year is not None:
             property_file = project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(year) + '.csv'
             if prop_df is None: prop_df = pd.read_csv(property_file)
-
 
         # Keep a copy of original df
         temp_df = prop_df
@@ -70,6 +74,12 @@ def closest_skytrain(lat,lon, sky_df = None):
     vector[-1] = min_df.iloc[0]['DIST_DIF']
 
     # returns on-hot encoded vector with distance at the end
+    return vector
+
+def one_hot_encoding(label, list_of_labels):
+
+    vector = [0]*len(list_of_labels)
+    vector[list_of_labels.index(label)] = 1
     return vector
 
     
