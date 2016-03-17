@@ -32,17 +32,13 @@ def avg_closest_properties(year, lat, long, prop_df = None, range_val = 0.0001):
 
     # If not enough values, start again with a bigger range
     if prop_df.count()['VALUE'] < 10:
-        print 'Entering recursion'
         return avg_closest_properties(year,lat,long,prop_df=temp_df,range_val=range_val*10)
 
-    print 'Time =', timeit.default_timer()-time1
 
     prop_df['DIST_DIF'] =  prop_df.apply(lambda row: vincenty((lat,long),(row['LATITUDE'],row['LONGITUDE'])).km,axis=1)
 
-    print 'Time =', timeit.default_timer()-time1
     ten_min_df = prop_df[['VALUE','DIST_DIF']].nsmallest(10,'DIST_DIF')
     five_min_df = ten_min_df.nsmallest(5,'DIST_DIF')
-    print 'Time =', timeit.default_timer()-time1
 
     return (five_min_df['VALUE'].mean(),ten_min_df['VALUE'].mean())
     
