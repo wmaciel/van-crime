@@ -108,7 +108,7 @@ def number_of_graffiti_points(latitude, longitude, radius1=50, radius2=100, graf
         if latlong_diff.m < radius1:
             count1 = count1 + int(row['COUNT'])
         
-        if latlong_diff < radius2:
+        if latlong_diff.m < radius2:
             count2 = count2 + int(row['COUNT'])
                     
     #now we got the counts, we need to clean up and return
