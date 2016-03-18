@@ -46,14 +46,11 @@ def avg_closest_properties(lat, lon,year = None, prop_df = None, range_val = 0.0
 
         # If not enough values, start again with a bigger range
         if prop_df.count()['VALUE'] < 10:
-            print 'Enter recursion'
             return avg_closest_properties(lat,lon,prop_df=temp_df,range_val=range_val*10)
 
 
         # Apply vincenty in the remaining rows
         prop_df['DIST_DIF'] =  prop_df.apply(lambda row: vincenty((lat,lon),(row['LATITUDE'],row['LONGITUDE'])).m,axis=1)
-
-        print prop_df
 
         # Find the top 10 and top 5 closest properties
         ten_min_df = prop_df[['VALUE','DIST_DIF']].nsmallest(10,'DIST_DIF')
@@ -109,6 +106,24 @@ def number_graffiti(lat,lon, graf_df = None, radius1 = 50, radius2 = 100):
     count_1 = count_2[count_2['DIST_DIF'] <= radius1]
 
     return [count_1['COUNT'].sum(), count_2['COUNT'].sum()]
+
+def number_street_lights(lat,lon,light_df = None, radius = 50):
+    light_file = project_root + 'data/street_lightings/street_lighting_poles.csv'
+    if light_df is None: light_df = pd.read_csv(light_file)
+    
+    # Narrow down options
+    light_df = light_df[light_df['LAT'] < lat+.001]
+    light_df = light_df[light_df['LAT'] > lat-.001]
+    light_df = light_df[light_df['LONG'] < lon+.001]
+    light_df = light_df[light_df['LONG'] < lon+.001]
+
+    if light_df['LAT'].count() == 0 : return 0
+
+    # Apply vincenty and find number of lights within radius
+    light_df['DIST_DIF'] = light_df.apply(lambda row: vincenty((lat,lon),(row['LAT'],row['LONG'])).m,axis=1)
+    min_lights = light_df[light_df['DIST_DIF'] < radius]
+
+    return  min_lights['DIST_DIF'].count()
 
 
 
