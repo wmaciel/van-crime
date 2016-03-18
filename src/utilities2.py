@@ -74,7 +74,7 @@ def closest_skytrain(lat,lon, sky_df = None):
     vector = [0]*(sky_df.count()['STATION']+1)
 
     # Find closest skytrain station
-    sky_df['DIST_DIF'] = sky_df.apply(lambda row: vincenty((lat,lon),(row['LAT'],row['LONG'])).km,axis=1)
+    sky_df['DIST_DIF'] = sky_df.apply(lambda row: vincenty((lat,lon),(row['LAT'],row['LONG'])).m,axis=1)
     min_df = sky_df.nsmallest(1,'DIST_DIF')
 
     vector[list(min_df.index)[0]] = 1
