@@ -3,36 +3,57 @@ Created by:
 Juan Sarria
 March 15, 2016
 '''
-import pandas as pd, numpy as np, timeit
+import pandas as pd, numpy as np, fiona, timeit
 from geopy.distance import vincenty
+from shapely import geometry
+from utilities import utm_to_latlong, latlong_to_utm
 
 
-project_root = '../'
+
+
+
+PROJECT_ROOT = '../'
 
 def main():
     #test values
-    lat = 49.28334
-    lon = -123.113
+    lat = 49.2668355595
+    lon = -123.070244095
+    year = 2010
+    month = 5
     '''
-    prop_df = pd.read_csv(project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(2006) + '.csv')
+    prop_df = pd.read_csv(PROJECT_ROOT + 'data/property_tax_06_15/latlong_property_tax_' + str(2006) + '.csv')
     print avg_closest_properties(lat,lon,prop_df=prop_df)
 
-    sky_df = pd.read_csv(project_root + 'data/skytrain_stations/rapid_transit_stations.csv')
+    sky_df = pd.read_csv(PROJECT_ROOT + 'data/skytrain_stations/rapid_transit_stations.csv')
     print closest_skytrain(lat,lon)
 
-    crime_df = pd.read_csv(project_root+'/data/crime_03_15/crime_latlong.csv')
+    crime_df = pd.read_csv(PROJECT_ROOT+'/data/crime_03_15/crime_latlong.csv')
     neighbourhoods = crime_df['NEIGHBOURHOOD'].unique().tolist()
     print len(neighbourhoods)
     print one_hot_encoding(neighbourhoods[2],neighbourhoods)
-    '''
+
     a = number_graffiti(lat,lon)
     print type(a[0])
+    '''
+    data = pd.read_csv(PROJECT_ROOT+'/data/crime_03_15/crime_latlong.csv')
+    data = data[data['YEAR'] >= 2006].sample(1000)
+    data = data[['LATITUDE','LONGITUDE', 'NEIGHBOURHOOD']]
+    data2 = data.apply(lambda row: pd.Series(locate_neighbourhood(row['LATITUDE'], row['LONGITUDE']),
+                       index=['NEIGHBOURHOOD_2']),axis=1)
+
+    data = pd.concat([data,data2],axis=1)[['NEIGHBOURHOOD','NEIGHBOURHOOD_2']]
+
+    data = data[data['NEIGHBOURHOOD'] != data['NEIGHBOURHOOD_2']][pd.notnull(data['NEIGHBOURHOOD'])]
+    print data
+    print data.count()
+
+
 
 def avg_closest_properties(lat, lon,year = None, prop_df = None, range_val = 0.0001):
 
     try:
         if year is not None:
-            property_file = project_root + 'data/property_tax_06_15/latlong_property_tax_' + str(year) + '.csv'
+            property_file = PROJECT_ROOT + 'data/property_tax_06_15/latlong_property_tax_' + str(year) + '.csv'
             if prop_df is None: prop_df = pd.read_csv(property_file)
 
         # Keep a copy of original df
@@ -62,10 +83,9 @@ def avg_closest_properties(lat, lon,year = None, prop_df = None, range_val = 0.0
     except:
         print "Error in avg_closest_properties"
 
-
 def closest_skytrain(lat,lon, sky_df = None):
 
-    skytrain_file = project_root + 'data/skytrain_stations/rapid_transit_stations.csv'
+    skytrain_file = PROJECT_ROOT + 'data/skytrain_stations/rapid_transit_stations.csv'
     if sky_df is None: sky_df = pd.read_csv(skytrain_file)
 
     vector = [0]*(sky_df.count()['STATION']+1)
@@ -88,7 +108,7 @@ def one_hot_encoding(label, list_of_labels):
 
 def number_graffiti(lat,lon, graf_df = None, radius1 = 50, radius2 = 100):
 
-    graffiti_file = project_root + 'data/graffiti/graffiti.csv'
+    graffiti_file = PROJECT_ROOT + 'data/graffiti/graffiti.csv'
     if graf_df is None: graf_df = pd.read_csv(graffiti_file)
 
     # Narrow down options
@@ -108,7 +128,7 @@ def number_graffiti(lat,lon, graf_df = None, radius1 = 50, radius2 = 100):
     return [count_1['COUNT'].sum(), count_2['COUNT'].sum()]
 
 def number_street_lights(lat,lon,light_df = None, radius = 50):
-    light_file = project_root + 'data/street_lightings/street_lighting_poles.csv'
+    light_file = PROJECT_ROOT + 'data/street_lightings/street_lighting_poles.csv'
     if light_df is None: light_df = pd.read_csv(light_file)
     
     # Narrow down options
@@ -125,10 +145,30 @@ def number_street_lights(lat,lon,light_df = None, radius = 50):
 
     return  min_lights['DIST_DIF'].count()
 
+def locate_neighbourhood(lat, lon):
+    with fiona.open(PROJECT_ROOT+'data/neighbourhood_borders/local_area_boundary.shp') as neighbourhoods:
+
+        point = geometry.Point(lat,lon)
+
+        for n in neighbourhoods:
+
+            if n['properties']['NAME'] == 'Arbutus-Ridge': n['properties']['NAME'] = 'Arbutus Ridge'
+            if n['properties']['NAME'] == 'Downtown': n['properties']['NAME'] = 'Central Business District'
+            n['geometry']['coordinates'][0] = [utm_to_latlong(x[0],x[1]) for x in n['geometry']['coordinates'][0]]
+
+            shape = geometry.asShape(n['geometry'])
 
 
 
-    
+
+            if shape.contains(point): return n['properties']['NAME']
+
+        return -1
+
+
+
+
+
 
 
 if __name__ == "__main__":
