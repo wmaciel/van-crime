@@ -1,0 +1,25 @@
+Data pre processing:
+
+Crime data points
+- Fetch csv file from Vancouver Open Data
+- Remove unwanted colums
+- Convert UTM coordinates to Latitude and Longitude coordinates
+- Merge Musqueam neighbourhood into Dunbar-Southlands
+
+Property tax reports
+- Fetch csv file from Vancouver Open Data
+- Remove unwanted columns
+- Compute average property value for properties on the same address
+- Convert Addresses to Lat Long coordinates using BC Geoservices
+
+Locations of graffitis, homeless shelters, SkyTrain stations, and street lights
+- Fetch kml file from Vancouver Open Data
+- Parse kml file and output a csv
+
+Weather information
+- Fetch daily weather reports from 2006 to 2016
+- Compute avg, min and max temperature per month
+- Compute total precipitation for each month
+
+Feature vector generation:
+
