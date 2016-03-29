@@ -1,4 +1,4 @@
-Data pre processing:
+Data pre processing: ##########################################################
 
 Crime data points
 - Fetch csv file from Vancouver Open Data
@@ -21,5 +21,38 @@ Weather information
 - Compute avg, min and max temperature per month
 - Compute total precipitation for each month
 
-Feature vector generation:
+Feature vector generation: ####################################################
+For each crime point, the label is defined as the type of crime and a feature 
+vector is generated to describe the location.
+
+- Neighbourhood
+-- One hot encoding of the neighborhood
+
+- Grafitti 
+-- count of the number of reported graffitis in a radius of 50 meters
+-- count of the number of reported graffitis in a radius of 100 meters
+
+- Homeless shelter
+-- Distance to closest adult homeless shelter
+-- Distance to closest men homeless shelter
+-- Distance to closest women and families homeless shelter
+-- Distance to closest youth homeleth shelter
+
+- Properties values
+-- Average value of the 5 closest properties
+-- Avergae value of the 10 closest properties
+
+- SkyTrain station
+-- One hot encoding of the closest SkyTrain station
+-- Distance to the closest SkyTrain station
+
+- Street lights
+-- Count the number of street light poles in a radius of 50 meters
+
+- Weather
+-- Average temperature on the month of the crime
+-- Minimum temperature on the month of the crime
+-- Maximum temperature on the month of the crime
+-- Total precipitation on the month of the crime
+
 
