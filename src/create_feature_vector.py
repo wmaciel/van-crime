@@ -4,9 +4,10 @@ Juan Sarria
 March 17, 2016
 '''
 import pandas as pd, timeit as tm, pickle as pk, csv, sys
-from utilities2 import one_hot_encoding, number_graffiti, avg_closest_properties, closest_skytrain, number_street_lights
+from utilities2 import one_hot_encoding, number_graffiti, avg_closest_properties, closest_skytrain, number_street_lights, get_weather
 from utilities2 import locate_neighbourhood
 from utilities import number_of_homeless_shelters_at
+from calendar import month, month_abbr
 
 PROJECT_ROOT = '../'
 TEST_VAL = True
@@ -59,62 +60,69 @@ def get_neighbourhoods():
 
 def calculate_vectors(crime_df, n_types, n_index, h_fh):
 
-     print 'One-hot encoding neighbourhoods...',
-     neighbourhoods = crime_df['NEIGHBOURHOOD']
-     crime_df = crime_df.drop('NEIGHBOURHOOD', axis=1)
-     neighbourhoods = neighbourhoods.apply(lambda x: pd.Series(one_hot_encoding(x,n_types),index=n_index))
-
-            ##################################################################################
-     print 'Getting graffiti count...',
-
-     graffiti = crime_df[['LATITUDE', 'LONGITUDE']]
-     graffiti = graffiti.apply(lambda row: pd.Series(number_graffiti(row['LATITUDE'],row['LONGITUDE'],
-                                                     GRAF_DF),
-                                index=['G_50M', 'G_100M']), axis=1)
-
-            ##################################################################################
-
-     print 'Getting closest homeless shelters...',
-     homeless = crime_df[['LATITUDE','LONGITUDE']]
-     homeless = homeless.apply(lambda row: pd.Series(number_of_homeless_shelters_at(row['LATITUDE'],
-                                                     row['LONGITUDE'],
-                                                     homeless_fh=h_fh),
-                                ['H_ADULT','H_MEN','H_WOMEN_FAM','H_YOUTH']),axis=1)
-
-            ##################################################################################
-
-     print 'Calculating average property values...',
-     prop_values = crime_df[['YEAR','LATITUDE','LONGITUDE']]
-     prop_values = prop_values.apply(lambda  row: pd.Series(avg_closest_properties(row['LATITUDE'],
-                                                            row['LONGITUDE'],
-                                    prop_df=PROP_DFS[int(row['YEAR'])]),
-                                    ['P_AVG5', 'P_AVG10']), axis=1)
-
-            ##################################################################################
-
-     print 'Finding closest skytrain...',
-     sky_df = pd.read_csv(PROJECT_ROOT + 'data/skytrain_stations/rapid_transit_stations.csv')
-     s_index = ['S_'+x.replace(' ','_') for x in sky_df['STATION'].tolist()] + ['S_DISTANCE']
-     sky = crime_df[['LATITUDE','LONGITUDE']]
-     sky = sky.apply(lambda row: pd.Series(closest_skytrain(row['LATITUDE'],row['LONGITUDE'],sky_df),
-                     index=s_index),axis=1)
-
+    print 'One-hot encoding neighbourhoods...',
+    neighbourhoods = crime_df['NEIGHBOURHOOD']
+    crime_df = crime_df.drop('NEIGHBOURHOOD', axis=1)
+    neighbourhoods = neighbourhoods.apply(lambda x: pd.Series(one_hot_encoding(x,n_types),index=n_index))
+    
     ##################################################################################
-
-     print 'Getting street light count...',
-     light_df = pd.read_csv(PROJECT_ROOT + 'data/street_lightings/street_lighting_poles.csv')
-     lights = crime_df[['LATITUDE','LONGITUDE']]
-     lights = lights.apply(lambda row: pd.Series(number_street_lights(row['LATITUDE'], row['LONGITUDE'],
-                          light_df),index=['SL_50M']),axis=1)
+    print 'Getting graffiti count...',
+    
+    graffiti = crime_df[['LATITUDE', 'LONGITUDE']]
+    graffiti = graffiti.apply(lambda row: pd.Series(number_graffiti(row['LATITUDE'],row['LONGITUDE'],
+                                                    GRAF_DF),
+                               index=['G_50M', 'G_100M']), axis=1)
+    
     ##################################################################################
-
-     print 'Getting monthly weather information...',
-
-     weather = crime_df[['YEAR', 'MONTH']]
-     weather = weather.reset_index().merge(WEATHER_DF).set_index('index')
-     weather = weather.drop('YEAR',axis=1).drop('MONTH',axis=1)
-
-     return pd.concat([crime_df,neighbourhoods,graffiti,homeless,prop_values,sky,lights,weather], axis=1)
+    
+    print 'Getting closest homeless shelters...',
+    homeless = crime_df[['LATITUDE','LONGITUDE']]
+    homeless = homeless.apply(lambda row: pd.Series(number_of_homeless_shelters_at(row['LATITUDE'],
+                                                    row['LONGITUDE'],
+                                                    homeless_fh=h_fh),
+                               ['H_ADULT','H_MEN','H_WOMEN_FAM','H_YOUTH']),axis=1)
+    
+    ##################################################################################
+    
+    print 'Calculating average property values...',
+    prop_values = crime_df[['YEAR','LATITUDE','LONGITUDE']]
+    prop_values = prop_values.apply(lambda  row: pd.Series(avg_closest_properties(row['LATITUDE'],
+                                                           row['LONGITUDE'],
+                                   prop_df=PROP_DFS[int(row['YEAR'])]),
+                                   ['P_AVG5', 'P_AVG10']), axis=1)
+    
+    ##################################################################################
+    
+    print 'Finding closest skytrain...',
+    sky_df = pd.read_csv(PROJECT_ROOT + 'data/skytrain_stations/rapid_transit_stations.csv')
+    s_index = ['S_'+x.replace(' ','_') for x in sky_df['STATION'].tolist()] + ['S_DISTANCE']
+    sky = crime_df[['LATITUDE','LONGITUDE']]
+    sky = sky.apply(lambda row: pd.Series(closest_skytrain(row['LATITUDE'],row['LONGITUDE'],sky_df),
+                    index=s_index),axis=1)
+    
+    ##################################################################################
+    
+    print 'Getting street light count...',
+    light_df = pd.read_csv(PROJECT_ROOT + 'data/street_lightings/street_lighting_poles.csv')
+    lights = crime_df[['LATITUDE','LONGITUDE']]
+    lights = lights.apply(lambda row: pd.Series(number_street_lights(row['LATITUDE'], row['LONGITUDE'],
+                         light_df),index=['SL_50M']),axis=1)
+    ##################################################################################
+    
+    print 'Getting monthly weather information...',
+    '''
+    month = crime_df.iloc[0]['MONTH']
+    year = crime_df.iloc[0]['YEAR']
+    print 'Year: ' + str(year)
+    print 'Month: '+str(month)
+    weather = get_weather(year, month, WEATHER_DF)
+    print weather
+    '''
+    weather = crime_df[['YEAR', 'MONTH']]
+    weather = weather.reset_index().merge(WEATHER_DF).set_index('index')
+    weather = weather.drop('YEAR',axis=1).drop('MONTH',axis=1)
+    
+    return pd.concat([crime_df,neighbourhoods,graffiti,homeless,prop_values,sky,lights,weather], axis=1)
 
 def create_vector(year,month, lat, lon):
 
