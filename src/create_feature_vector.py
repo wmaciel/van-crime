@@ -4,10 +4,10 @@ Juan Sarria
 March 17, 2016
 '''
 import pandas as pd, timeit as tm, pickle as pk, csv, sys
-from utilities2 import one_hot_encoding, number_graffiti, avg_closest_properties, closest_skytrain, number_street_lights, get_weather
+from utilities2 import one_hot_encoding, number_graffiti, avg_closest_properties, closest_skytrain, number_street_lights
 from utilities2 import locate_neighbourhood
 from utilities import number_of_homeless_shelters_at
-from calendar import month, month_abbr
+from MySQLdb.constants.FIELD_TYPE import YEAR
 
 PROJECT_ROOT = '../'
 TEST_VAL = True
@@ -59,6 +59,9 @@ def get_neighbourhoods():
     return n_types, n_index
 
 def calculate_vectors(crime_df, n_types, n_index, h_fh):
+    
+    year = crime_df.iloc[0]['YEAR']
+    month = crime_df.iloc[0]['MONTH']
 
     print 'One-hot encoding neighbourhoods...',
     neighbourhoods = crime_df['NEIGHBOURHOOD']
@@ -85,10 +88,14 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     ##################################################################################
     
     print 'Calculating average property values...',
+    prop_year = year
+    if year < 2006: prop_year = 2006
+    elif year > 2015: prop_year = 2015
+    
     prop_values = crime_df[['YEAR','LATITUDE','LONGITUDE']]
     prop_values = prop_values.apply(lambda  row: pd.Series(avg_closest_properties(row['LATITUDE'],
                                                            row['LONGITUDE'],
-                                   prop_df=PROP_DFS[int(row['YEAR'])]),
+                                   prop_df=PROP_DFS[prop_year]),
                                    ['P_AVG5', 'P_AVG10']), axis=1)
     
     ##################################################################################
@@ -118,6 +125,14 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     weather = get_weather(year, month, WEATHER_DF)
     print weather
     '''
+
+    
+    if year > 2015 or year < 2006:
+        filter_month = WEATHER_DF[(WEATHER_DF.MONTH == month)].drop('YEAR',axis=1).drop('MONTH',axis=1).mean(axis=0).to_frame().transpose()
+        filter_month[['YEAR','MONTH']] = [year,month]
+        print filter_month
+
+    
     weather = crime_df[['YEAR', 'MONTH']]
     weather = weather.reset_index().merge(WEATHER_DF).set_index('index')
     weather = weather.drop('YEAR',axis=1).drop('MONTH',axis=1)
