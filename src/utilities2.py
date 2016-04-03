@@ -7,6 +7,8 @@ import pandas as pd, numpy as np, fiona, timeit
 from geopy.distance import vincenty
 from shapely import geometry
 from utilities import utm_to_latlong, latlong_to_utm
+from __builtin__ import False
+from pandas.core.frame import DataFrame
 
 
 
@@ -99,6 +101,25 @@ def closest_skytrain(lat,lon, sky_df = None):
 
     # returns on-hot encoded vector with distance at the end
     return vector
+'''
+def get_weather(year, month, weatherdf = None):
+    
+    weather_file = PROJECT_ROOT + 'data/weather/VANCOUVER SEA ISLAND CCG/summarydata.csv'
+    if weatherdf is None:
+        weatherdf = pd.read_csv(weather_file)
+        
+    # basic checking to see if we have reasonable data passed in.
+    if month > 12:
+        return False
+    
+    if year >= 2006 and year <= 2015:
+        filter_year =  weatherdf[(weatherdf.YEAR == year)]
+        line = filter_year[(filter_year.MONTH == month)].drop('YEAR',axis=1).drop('MONTH',axis=1)
+        return line
+    else:
+        filter_month = weatherdf[(weatherdf.MONTH == month)].drop('YEAR',axis=1).drop('MONTH',axis=1).mean(axis=0).to_frame().transpose()
+        return filter_month
+'''
 
 def one_hot_encoding(label, list_of_labels):
 
