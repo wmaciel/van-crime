@@ -128,10 +128,11 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     
     if year > 2015 or year < 2006:
         filter_month = WEATHER_DF[(WEATHER_DF.MONTH == month)].drop('YEAR',axis=1).drop('MONTH',axis=1).mean(axis=0).to_frame().transpose()
+    
         filter_month['YEAR'] = year
         filter_month['MONTH'] = month
-        print filter_month
         weather_df = pd.concat([weather_df,filter_month],axis=0)
+        weather_df = weather_df[['YEAR','MONTH','MEAN_TEMP_C','MIN_TEMP_C','MAX_TEMP_C','TOTAL_PERCIP_MM']]
 
 
     
@@ -151,11 +152,9 @@ def create_vector(year,month, lat, lon):
     row = pd.DataFrame(columns=['YEAR','MONTH','LATITUDE','LONGITUDE','NEIGHBOURHOOD'],index=['1'])
 
     row.loc['1'] = pd.Series({'YEAR':year,'MONTH':month,'LATITUDE':lat,'LONGITUDE':lon,'NEIGHBOURHOOD':neighbourhood})
-    print row
     n_types, n_index = get_neighbourhoods()
     h_fh = open(PROJECT_ROOT+'data/homeless_shelters/doc.csv')
 
-    print row
 
     return calculate_vectors(row,n_types,n_index,h_fh)
 

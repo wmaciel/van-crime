@@ -35,11 +35,11 @@ def gather_time():
 
 
 def gather_address():
-    print 'Street Name:\t',
-    st_name = sys.stdin.readline().strip()
-
     print 'Street Number:\t',
     st_num = sys.stdin.readline().strip()
+    
+    print 'Street Name:\t',
+    st_name = sys.stdin.readline().strip()
 
     address = st_num + ' ' + st_name + ', Vancouver, BC, Canada'
 
@@ -97,6 +97,7 @@ Y88b   d88P 8888b.  88888b.  888        888d888 888 88888b.d88b.   .d88b.
     print 'Generating feature vector...',
     f_vec = create_vector(int(year), int(month), latitude, longitude)
     print 'OK'
+
 
     print 'Loading model...',
     clf = joblib.load('../models/random_forest_model.p')
