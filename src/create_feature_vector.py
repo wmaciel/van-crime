@@ -7,7 +7,6 @@ import pandas as pd, timeit as tm, pickle as pk, csv, sys
 from utilities2 import one_hot_encoding, number_graffiti, avg_closest_properties, closest_skytrain, number_street_lights
 from utilities2 import locate_neighbourhood
 from utilities import number_of_homeless_shelters_at
-from MySQLdb.constants.FIELD_TYPE import YEAR
 
 PROJECT_ROOT = '../'
 TEST_VAL = True
@@ -125,16 +124,19 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     weather = get_weather(year, month, WEATHER_DF)
     print weather
     '''
-
+    weather_df = WEATHER_DF
     
     if year > 2015 or year < 2006:
         filter_month = WEATHER_DF[(WEATHER_DF.MONTH == month)].drop('YEAR',axis=1).drop('MONTH',axis=1).mean(axis=0).to_frame().transpose()
-        filter_month[['YEAR','MONTH']] = [year,month]
+        filter_month['YEAR'] = year
+        filter_month['MONTH'] = month
         print filter_month
+        weather_df = pd.concat([weather_df,filter_month],axis=0)
+
 
     
     weather = crime_df[['YEAR', 'MONTH']]
-    weather = weather.reset_index().merge(WEATHER_DF).set_index('index')
+    weather = weather.reset_index().merge(weather_df).set_index('index')
     weather = weather.drop('YEAR',axis=1).drop('MONTH',axis=1)
     
     return pd.concat([crime_df,neighbourhoods,graffiti,homeless,prop_values,sky,lights,weather], axis=1)
