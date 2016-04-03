@@ -13,7 +13,7 @@ def compress_vectors(train=True):
     ext = 'train'
     if train == False: ext = 'test'
 
-    vect = pd.read_csv(DATA_FOLDER+ ext +'_vectors.csv', index_col='Unnamed: 0')
+    vect = pd.read_csv(DATA_FOLDER+ ext +'_vectors.csv', index_col='Unnamed: 0').drop('TYPE',axis=1)
     labl = pd.read_csv(DATA_FOLDER+ ext +'_labels.csv', index_col='Unnamed: 0').drop('YEAR',axis=1)
 
     data = vect.join(labl,how='inner')
