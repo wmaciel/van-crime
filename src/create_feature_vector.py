@@ -52,8 +52,8 @@ def get_neighbourhoods():
     n_types = MAIN_DATA[MAIN_DATA['NEIGHBOURHOOD'] != 'Musqueam']['NEIGHBOURHOOD']
     n_types = n_types[pd.notnull(n_types)].unique().tolist()
     n_index = [('n_'+x.replace(' ','_')).upper() for x in n_types]
-    print 'Finished'
-    print 'Time taken:', tm.default_timer()-time1, ' seconds\n'
+    # print 'Finished'
+    # print 'Time taken:', tm.default_timer()-time1, ' seconds\n'
 
     return n_types, n_index
 
