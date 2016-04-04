@@ -28,7 +28,7 @@ WEATHER_DF = pd.read_csv(PROJECT_ROOT + 'data/weather/VANCOUVER SEA ISLAND CCG/s
 
 
 def create_labels(crime_data, output_folder = None, p_ext = ''):
-    print 'Creating labels and outputting to csv and pickle...',
+    # print 'Creating labels and outputting to csv and pickle...',
     time1 = tm.default_timer()
     type_vals = MAIN_DATA['TYPE'].unique().tolist()
     labels = crime_data['TYPE']
@@ -46,7 +46,7 @@ def create_labels(crime_data, output_folder = None, p_ext = ''):
     print 'Time taken:', tm.default_timer()-time1, ' seconds\n'
     
 def get_neighbourhoods():
-    print 'Reading in additional data and setting variables...'
+    # print 'Reading in additional data and setting variables...'
     time1 = tm.default_timer()
     # list of neighbourhoods
     n_types = MAIN_DATA[MAIN_DATA['NEIGHBOURHOOD'] != 'Musqueam']['NEIGHBOURHOOD']
@@ -62,13 +62,13 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     year = crime_df.iloc[0]['YEAR']
     month = crime_df.iloc[0]['MONTH']
 
-    print 'One-hot encoding neighbourhoods...',
+    # print 'One-hot encoding neighbourhoods...',
     neighbourhoods = crime_df['NEIGHBOURHOOD']
     crime_df = crime_df.drop('NEIGHBOURHOOD', axis=1)
     neighbourhoods = neighbourhoods.apply(lambda x: pd.Series(one_hot_encoding(x,n_types),index=n_index))
     
     ##################################################################################
-    print 'Getting graffiti count...',
+    # print 'Getting graffiti count...',
     
     graffiti = crime_df[['LATITUDE', 'LONGITUDE']]
     graffiti = graffiti.apply(lambda row: pd.Series(number_graffiti(row['LATITUDE'],row['LONGITUDE'],
@@ -77,7 +77,7 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     
     ##################################################################################
     
-    print 'Getting closest homeless shelters...',
+    # print 'Getting closest homeless shelters...',
     homeless = crime_df[['LATITUDE','LONGITUDE']]
     homeless = homeless.apply(lambda row: pd.Series(number_of_homeless_shelters_at(row['LATITUDE'],
                                                     row['LONGITUDE'],
@@ -86,7 +86,7 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     
     ##################################################################################
     
-    print 'Calculating average property values...',
+    # print 'Calculating average property values...',
     prop_year = year
     if year < 2006: prop_year = 2006
     elif year > 2015: prop_year = 2015
@@ -99,7 +99,7 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     
     ##################################################################################
     
-    print 'Finding closest skytrain...',
+    # print 'Finding closest skytrain...',
     sky_df = pd.read_csv(PROJECT_ROOT + 'data/skytrain_stations/rapid_transit_stations.csv')
     s_index = ['S_'+x.replace(' ','_') for x in sky_df['STATION'].tolist()] + ['S_DISTANCE']
     sky = crime_df[['LATITUDE','LONGITUDE']]
@@ -108,14 +108,14 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     
     ##################################################################################
     
-    print 'Getting street light count...',
+    # print 'Getting street light count...',
     light_df = pd.read_csv(PROJECT_ROOT + 'data/street_lightings/street_lighting_poles.csv')
     lights = crime_df[['LATITUDE','LONGITUDE']]
     lights = lights.apply(lambda row: pd.Series(number_street_lights(row['LATITUDE'], row['LONGITUDE'],
                          light_df),index=['SL_50M']),axis=1)
     ##################################################################################
     
-    print 'Getting monthly weather information...',
+    # print 'Getting monthly weather information...',
 
     weather_df = WEATHER_DF
     
