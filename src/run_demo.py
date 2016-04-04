@@ -1,3 +1,4 @@
+# coding=utf-8
 __author__ = 'walthermaciel'
 
 from geopy.geocoders import DataBC
@@ -10,6 +11,7 @@ import os
 import pandas as pd
 from sklearn.externals import joblib
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
 
 crime_id = {0: 'BNE Residential   ',
             1: 'Theft from Vehicle',
@@ -75,6 +77,7 @@ def gather_lat_long(address):
 
 
 def run_demo():
+    os.system('clear')
 
     print '''
 
@@ -88,6 +91,7 @@ Y88b   d88P 8888b.  88888b.  888        888d888 888 88888b.d88b.   .d88b.
    Y888P   888  888 888  888 Y88b  d88P 888     888 888  888  888 Y8b.
     Y8P    "Y888888 888  888  "Y8888P"  888     888 888  888  888  "Y8888
 
+------------------ https://github.com/wmaciel/van-crime -----------------
 
     '''
     year, month = gather_time()
@@ -96,19 +100,35 @@ Y88b   d88P 8888b.  88888b.  888        888d888 888 88888b.d88b.   .d88b.
 
     print 'Generating feature vector...',
     f_vec = create_vector(int(year), int(month), latitude, longitude)
-    print 'OK'
+    if isinstance(f_vec, int):
+        print 'Failed'
+    else:
+        print 'OK'
 
+        print 'Loading classification model...',
+        clf = joblib.load('../models/random_forest_model.p')
+        print 'OK'
 
-    print 'Loading model...',
-    clf = joblib.load('../models/random_forest_model.p')
-    print 'OK'
+        print 'Loading regression model...',
+        reg = joblib.load('../models/RandomForestRegressor.p')
+        print 'OK'
 
-    print '\n\n----- Results -----\n'
+        print '\n\n----- Results -----'
 
-    print 'Probability of crime type, given that a crime happened:'
-    prob_list = clf.predict_proba(f_vec.as_matrix())[0]
-    for i, p in enumerate(prob_list):
-        print crime_id[i] + '\t' + "{:.2f}".format(p * 100) + '%'
+        print 'Probability of crime type, given that a crime happened:'
+        prob_list = clf.predict_proba(f_vec.as_matrix())[0]
+        for i, p in enumerate(prob_list):
+            print crime_id[i] + '\t' + "{:.2f}".format(p * 100) + '%'
+        print '--------------------------\n'
+
+        print 'Expected number of crimes to happen:'
+        expected = reg.predict(f_vec.as_matrix())[0]
+        print expected
+        print '--------------------------\n'
+
+        print 'Expected number of crimes to happen by type:'
+        for i, p in enumerate(prob_list):
+            print crime_id[i] + '\t' + "{:.2f}".format(p * expected)
 
 
 if __name__ == '__main__':
@@ -116,6 +136,5 @@ if __name__ == '__main__':
 
     while True:
         run_demo()
-        print 'press enter to reset'
+        print '\npress enter to reset'
         sys.stdin.readline()
-        os.system('clear')
