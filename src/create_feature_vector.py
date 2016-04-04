@@ -49,7 +49,7 @@ def get_neighbourhoods():
     print 'Reading in additional data and setting variables...'
     time1 = tm.default_timer()
     # list of neighbourhoods
-    n_types = MAIN_DATA['NEIGHBOURHOOD']
+    n_types = MAIN_DATA[MAIN_DATA['NEIGHBOURHOOD'] != 'Musqueam']['NEIGHBOURHOOD']
     n_types = n_types[pd.notnull(n_types)].unique().tolist()
     n_index = [('n_'+x.replace(' ','_')).upper() for x in n_types]
     print 'Finished'
@@ -116,14 +116,7 @@ def calculate_vectors(crime_df, n_types, n_index, h_fh):
     ##################################################################################
     
     print 'Getting monthly weather information...',
-    '''
-    month = crime_df.iloc[0]['MONTH']
-    year = crime_df.iloc[0]['YEAR']
-    print 'Year: ' + str(year)
-    print 'Month: '+str(month)
-    weather = get_weather(year, month, WEATHER_DF)
-    print weather
-    '''
+
     weather_df = WEATHER_DF
     
     if year > 2015 or year < 2006:
